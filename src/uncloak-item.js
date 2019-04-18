@@ -98,7 +98,7 @@ export class UncloakItem {
 		const bot_vis = ( rect.bottom > 0 ? rect.bottom > this.getVH( 1 - fraction ) : true );
 
 		// x bounds
-		const right_vis = ( rect.right <= this.getVW( fraction ) );
+		const right_vis = ( Math.floor( rect.right ) <= this.getVW( fraction ) );
 		const left_vis = ( rect.left > 0 ? rect.left > this.getVW( 1 - fraction ) : true );
 
 		return top_vis && bot_vis && right_vis && left_vis;
