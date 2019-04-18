@@ -94,11 +94,11 @@ export class UncloakItem {
 	// BOUNDS helpers
 	inViewport( rect, fraction = this.offsetFraction ) {
 		// y bounds
-		const top_vis = ( rect.top < this.getVH( fraction ) );
+		const top_vis = ( rect.top <= this.getVH( fraction ) );
 		const bot_vis = ( rect.bottom > 0 ? rect.bottom > this.getVH( 1 - fraction ) : true );
 
 		// x bounds
-		const right_vis = ( rect.right < this.getVW( fraction ) );
+		const right_vis = ( rect.right <= this.getVW( fraction ) );
 		const left_vis = ( rect.left > 0 ? rect.left > this.getVW( 1 - fraction ) : true );
 
 		return top_vis && bot_vis && right_vis && left_vis;
