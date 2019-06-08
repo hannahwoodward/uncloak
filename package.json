@@ -1,11 +1,11 @@
 {
-	"name": "uncloak",
-	"version": "0.1.0",
-	"author": "Hannah Woodward",
-	"scripts": {
-		"lint": "eslint src/*.js"
-	},
-	"devDependencies": {
-		"eslint": "^5.12.1"
-	}
+  "name": "uncloak",
+  "version": "0.1.0",
+  "author": "Hannah Woodward",
+  "scripts": {
+    "lint": "eslint src/*.js"
+  },
+  "devDependencies": {
+    "eslint": "^5.12.1"
+  }
 }
