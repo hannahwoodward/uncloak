@@ -10,7 +10,7 @@ export class UncloakItem {
     };
     this.delayType = node.getAttribute( 'data-uncloak-delay-type' ) || null;
     this.delayTypes = options.delayTypes || {};
-    this.lazyContent = node.querySelectorAll( '[data-lazy-src], [data-lazy-srcset]' );
+    this.lazyContent = node.querySelectorAll( '[data-uncloak-src], [data-uncloak-srcset]' );
     this.lazyContentLoadStatus = -1, // NB: -1 => unloaded, 1 => loading, 2 => loaded
     this.node = node;
     this.offsetFraction = node.getAttribute( 'data-uncloak-offset' ) || 1;
@@ -114,8 +114,8 @@ export class UncloakItem {
     const loaded = ( element ) => {
       return () => {
         element.removeEventListener( 'load', loaded, false );
-        element.removeAttribute( 'data-lazy-src' );
-        element.removeAttribute( 'data-lazy-srcset' );
+        element.removeAttribute( 'data-uncloak-src' );
+        element.removeAttribute( 'data-uncloak-srcset' );
         left_to_load -= 1;
         if ( left_to_load === 0 ) {
           this.lazyContentLoadStatus = 2;
@@ -128,11 +128,11 @@ export class UncloakItem {
 
     for ( let i = 0; i < this.lazyContent.length; i++ ) {
       const el = this.lazyContent[i];
-      const lazy_srcset = el.getAttribute( 'data-lazy-srcset' ) || null;
+      const lazy_srcset = el.getAttribute( 'data-uncloak-srcset' ) || null;
       if ( lazy_srcset ) {
         el.srcset = lazy_srcset;
       }
-      el.src = el.getAttribute( 'data-lazy-src' );
+      el.src = el.getAttribute( 'data-uncloak-src' );
       el.addEventListener( 'load', loaded( el ), false );
     }
   }
