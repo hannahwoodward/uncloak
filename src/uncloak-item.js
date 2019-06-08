@@ -1,6 +1,3 @@
-/* global VideoPlayer */
-// import { VideoPlayer } from './video-player.js';
-
 export class UncloakItem {
   constructor( node, options ) {
     node.removeAttribute( 'data-uncloak-new' );
@@ -13,26 +10,13 @@ export class UncloakItem {
     };
     this.delayType = node.getAttribute( 'data-uncloak-delay-type' ) || null;
     this.delayTypes = options.delayTypes || {};
-    this.hasVideo = node.hasAttribute( 'data-uncloak-video' );
     this.lazyContent = node.querySelectorAll( '[data-lazy-src], [data-lazy-srcset]' );
     this.lazyContentLoadStatus = -1, // NB: -1 => unloaded, 1 => loading, 2 => loaded
     this.node = node;
     this.offsetFraction = node.getAttribute( 'data-uncloak-offset' ) || 1;
-    this.promise = null;
-    this.videoPlayer = null;
+  }
 
-    if ( this.hasVideo && typeof VideoPlayer !== 'undefined' ) {
-      const container = node.querySelector( '.' + node.getAttribute( 'data-uncloak-video' ) );
-      this.videoPlayer = new VideoPlayer( { container: container, autoplay: 0 }, false );
-      this.videoPlayer.addCallback( 'firstPlay', () => {
-        this.uncloak();
-      } );
-      this.videoPlayer.addCallback( 'error', () => {
-        this.handleLazyContent( { top: 0, left: 0, right: 0, bottom: 0 } );
-        this.uncloak();
-      } );
-    }
-
+  create() {
     this.runCallbacks( 'create' );
   }
 
@@ -61,12 +45,6 @@ export class UncloakItem {
   load( rect ) {
     this.runCallbacks( 'load' );
 
-    if ( this.hasVideo && !this.videoPlayer.isDisabled() ) {
-      this.toggleVideoPlay( this.inViewport( rect, 1.25 ) );
-      return;
-    }
-
-    // Only handle lazy content if video is not working
     if ( this.inViewport( rect, 1.5 ) ) {
       this.handleLazyContent( rect );
     }
@@ -157,13 +135,6 @@ export class UncloakItem {
       el.src = el.getAttribute( 'data-lazy-src' );
       el.addEventListener( 'load', loaded( el ), false );
     }
-  }
-  toggleVideoPlay( should_play ) {
-    if ( should_play ) {
-      this.videoPlayer.play();
-      return;
-    }
-    this.videoPlayer.pause();
   }
   imagesLoaded() {
     return ( this.lazyContent.length === 0 || this.lazyContentLoadStatus === 2 );

@@ -1,4 +1,5 @@
 import { UncloakItem } from './uncloak-item.js';
+import { UncloakVideoItem } from './uncloak-video-item.js';
 
 export default class Uncloak {
   constructor( options ) {
@@ -30,7 +31,15 @@ export default class Uncloak {
     const offset = this.items.length;
     let base_delay = 0;
     for ( let i = 0; i < raw_elements.length; i++ ) {
-      this.items.push( new UncloakItem( raw_elements[i], this.itemOptions ) );
+      const raw_el = raw_elements[i];
+      let uncloak_item;
+      if ( raw_el.hasAttribute( 'data-uncloak-video' ) ) {
+        uncloak_item = new UncloakVideoItem( raw_el, this.itemOptions )
+      } else {
+        uncloak_item = new UncloakItem( raw_el, this.itemOptions )
+      }
+      uncloak_item.create();
+      this.items.push( uncloak_item );
       base_delay = this.items[i + offset].process( base_delay );
     }
   }
