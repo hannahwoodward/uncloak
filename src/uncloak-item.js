@@ -2,8 +2,9 @@ export class UncloakItem {
   constructor( node, options ) {
     node.removeAttribute( 'data-uncloak-new' );
 
-    this.callbacks = options.callbacks || { create: [], load: [], uncloak: [] };
+    this.callbacks = options.callbacks || { init: [], uncloak: [] };
     this.cloaked = true;
+    this.uncloakReady = false;
     this.delayTimer = {
       y0: 0,
       y1: null
@@ -14,18 +15,31 @@ export class UncloakItem {
     this.lazyContentLoadStatus = -1, // NB: -1 => unloaded, 1 => loading, 2 => loaded
     this.node = node;
     this.offsetFraction = node.getAttribute( 'data-uncloak-offset' ) || 1;
+
+    this.lazyContentObserver = null;
   }
 
-  create() {
-    this.runCallbacks( 'create' );
+  init() {
+    if ( this.lazyContent[0] ) {
+      this.lazyContentObserver = new IntersectionObserver( entries => {
+        const entry = entries[0];
+        if ( entry.isIntersecting ) {
+          this.loadLazyContent();
+
+          // images only need loading once, so stop observing once loaded
+          this.lazyContentObserver.disconnect();
+        }
+      }, {
+        rootMargin: '50%'
+      } );
+    }
+
+    this.lazyContentObserver.observe( this.node );
+    this.runCallbacks( 'init' );
   }
 
   process( base_delay ) {
-    const bounds = this.getRect();
-    const in_uncloakable_bounds = this.inViewport( bounds, this.offsetFraction );
-
-    this.load( bounds );
-    if ( in_uncloakable_bounds && this.cloaked ) {
+    if ( this.cloaked ) {
       // only calculate delay if item has a delay type and hasn't already been calculated
       if ( this.delayType !== null && this.delayTimer.y1 === null ) {
         this.delayTimer = {
@@ -36,18 +50,13 @@ export class UncloakItem {
       }
       if ( this.imagesLoaded() ) {
         this.uncloak();
+      } else {
+        // set uncloak ready status for when images have finished loading
+        this.uncloakReady = true;
       }
     }
 
     return base_delay;
-  }
-
-  load( rect ) {
-    this.runCallbacks( 'load' );
-
-    if ( this.inViewport( rect, 1.5 ) ) {
-      this.handleLazyContent( rect );
-    }
   }
 
   uncloak() {
@@ -67,19 +76,6 @@ export class UncloakItem {
       return;
     }
     setTimeout( doUncloak(), final_delay );
-  }
-
-  // BOUNDS helpers
-  inViewport( rect, fraction = this.offsetFraction ) {
-    // y bounds
-    const top_vis = ( rect.top <= this.getVH( fraction ) );
-    const bot_vis = ( rect.bottom > 0 ? rect.bottom > this.getVH( 1 - fraction ) : true );
-
-    // x bounds
-    const right_vis = ( Math.floor( rect.right ) <= this.getVW( fraction ) );
-    const left_vis = ( rect.left > 0 ? rect.left > this.getVW( 1 - fraction ) : true );
-
-    return top_vis && bot_vis && right_vis && left_vis;
   }
 
   // CALLBACK helper
@@ -104,7 +100,7 @@ export class UncloakItem {
 
 
   // MEDIA helpers
-  handleLazyContent( rect ) {
+  loadLazyContent() {
     if ( this.imagesLoaded() || this.lazyContentLoadStatus === 1 ) {
       return;
     }
@@ -119,7 +115,7 @@ export class UncloakItem {
         left_to_load -= 1;
         if ( left_to_load === 0 ) {
           this.lazyContentLoadStatus = 2;
-          if ( this.inViewport( rect ) ) {
+          if ( this.uncloakReady ) {
             this.uncloak();
           }
         }
@@ -138,27 +134,5 @@ export class UncloakItem {
   }
   imagesLoaded() {
     return ( this.lazyContent.length === 0 || this.lazyContentLoadStatus === 2 );
-  }
-
-  // GET helpers
-  getRect() {
-    // needed for IE10/11 which is sometimes slow to get these vals
-    let bounds = {};
-    try {
-      const rect = this.node.getBoundingClientRect();
-      bounds.top = rect.top;
-      bounds.bottom = rect.bottom;
-      bounds.left = rect.left;
-      bounds.right = rect.right;
-    } catch ( e ) {
-      bounds = { top: 0, bottom: 0, left: 0, right: 0 };
-    }
-    return bounds;
-  }
-  getVH( frac = 1 ) {
-    return ( window.innerHeight || document.documentElement.clientHeight ) * frac;
-  }
-  getVW( frac = 1 ) {
-    return ( window.innerWidth || document.documentElement.clientWidth ) * frac;
   }
 }
