@@ -14,7 +14,6 @@ export class UncloakItem {
     this.lazyContent = node.querySelectorAll( '[data-uncloak-src], [data-uncloak-srcset]' );
     this.lazyContentLoadStatus = -1, // NB: -1 => unloaded, 1 => loading, 2 => loaded
     this.node = node;
-    this.offsetFraction = node.getAttribute( 'data-uncloak-offset' ) || 1;
 
     this.lazyContentObserver = null;
   }

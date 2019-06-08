@@ -6,7 +6,6 @@ export class UncloakVideoItem extends UncloakItem {
   constructor( node, options ) {
     super( node, options );
 
-    this.promise = null;
     this.videoPlayer = null;
 
     if ( typeof VideoPlayer !== 'undefined' ) {
