@@ -68,6 +68,7 @@ CSS:
 ```
 
 ### Example: Iframe with poster image
+
 HTML:
 ```
 <!-- both elements have the data-uncloak-src so will be lazy loaded with Uncloak -->
@@ -76,7 +77,7 @@ HTML:
   <button class="embed__poster">
     <img data-uncloak-src="https://placekitten.com/1440/810">
   </button>
-  <iframe class="embed__content" data-uncloak-src="https://www.youtube.com/embed/G9KQfnqukno" frameborder="0"></iframe>
+  <iframe class="embed__iframe" data-uncloak-src="https://www.youtube.com/embed/G9KQfnqukno" frameborder="0"></iframe>
 </div>
 ```
 
