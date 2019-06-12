@@ -31,9 +31,10 @@ export class UncloakItem {
       }, {
         rootMargin: '50%'
       } );
+
+      this.lazyContentObserver.observe( this.node );
     }
 
-    this.lazyContentObserver.observe( this.node );
     this.runCallbacks( 'init' );
   }
 
