@@ -3,9 +3,15 @@
   "version": "1.0.0",
   "author": "Hannah Woodward",
   "scripts": {
-    "lint": "eslint src/*.js"
+    "lint": "eslint src/*.js",
+    "watch": "rollup -c -w",
+    "build": "rollup -c"
   },
   "devDependencies": {
-    "eslint": "^5.12.1"
+    "eslint": "^5.12.1",
+    "rollup": "^1.14.4",
+    "rollup-plugin-buble": "^0.19.6",
+    "rollup-plugin-terser": "^5.0.0",
+    "rollup-plugin-uglify": "^6.0.2"
   }
 }
