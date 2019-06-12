@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <style>
+    body,
+    html {
+      margin: 0;
+    }
+
+    .uncloak {
+      height: 0;
+      overflow: hidden;
+      padding-bottom: 30%;
+      transition: opacity 0.2s;
+      width: 100%;
+    }
+    .uncloak--cloaked {
+      opacity: 0;
+    }
+
+    .flex {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .w-3\/12 {
+      width: 25%;
+    }
+    .embed {
+      position: relative;
+    }
+    .embed__iframe {
+      height: 100%;
+      left: 0;
+      position: absolute;
+      top: 0;
+      width: 100%;
+    }
+    .embed__poster {
+      position: relative;
+      z-index: 2;
+    }
+
+
+    img,
+    video {
+      margin: 0 auto;
+      max-width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+  <section id="3" class="uncloak uncloak--cloaked" data-uncloak-new data-uncloak-video="uncloak__video" style="padding-bottom:56.25%;">
+    <img data-lazy-src="https://placekitten.com/800/400">
+    <div class="uncloak__video">
+      <video data-src="https://de0dqb7pdorb1.cloudfront.net/oneclinton_splash_2mb.mp4" muted loop playsinline></video>
+    </div>
+  </section>
+
+  <div class="flex">
+    <section class="w-3/12 uncloak uncloak--cloaked" data-uncloak-new>
+      <img data-uncloak-src="https://placekitten.com/450/450">
+    </section>
+    <section class="w-3/12 uncloak uncloak--cloaked" data-uncloak-new>
+      <img data-uncloak-src="https://placekitten.com/450/450">
+    </section>
+    <section class="w-3/12 uncloak uncloak--cloaked" data-uncloak-new>
+      <img data-uncloak-src="https://placekitten.com/450/450">
+    </section>
+    <section class="w-3/12 uncloak uncloak--cloaked" data-uncloak-new>
+      <img data-uncloak-src="https://placekitten.com/450/450">
+    </section>
+    <section class="w-3/12 uncloak uncloak--cloaked" data-uncloak-new>
+      <img data-uncloak-src="https://placekitten.com/450/450">
+    </section>
+  </div>
+
+  <section style="height:100vh;background:rgba(225,225,20,0.4)"></section>
+
+  <section id="2" class="uncloak uncloak--cloaked" data-uncloak-new>
+    <img data-uncloak-src="https://placekitten.com/1440/432">
+  </section>
+
+  <section class="uncloak uncloak--cloaked embed" data-uncloak-new>
+    <iframe class="embed__iframe" data-uncloak-src="https://www.youtube.com/embed/G9KQfnqukno" frameborder="0" allow="autoplay" allowfullscreen></iframe>
+    <img data-uncloak-src="https://placekitten.com/1440/810" class="embed__poster">
+  </section>
+
+  <script src="./main.js" type="module"></script>
+</body>
+</html>
