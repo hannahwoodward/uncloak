@@ -38,7 +38,7 @@ export default class Uncloak {
         }
       }
     }, {
-      rootMargin: '-20%'
+      rootMargin: '10% 0%'
     } );
 
     // initial load
