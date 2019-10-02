@@ -31,7 +31,7 @@ export class UncloakVideoItem extends UncloakItem {
       }
 
       // Only handle lazy content if video is not working
-      this.handleLazyContent();
+      this.loadLazyContent();
 
       // can stop observing if we no longer need to play/pause video
       this.lazyContentObserver.disconnect();
