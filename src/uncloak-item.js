@@ -80,7 +80,7 @@ export class UncloakItem {
     setTimeout( doUncloak, final_delay );
   }
 
-  reset() {
+  reset( reobserve = true ) {
     this.cloaked = true
     this.delayTimer = {
       y0: 0,
@@ -88,7 +88,7 @@ export class UncloakItem {
     }
     this.node.classList.add( 'uncloak--cloaked' )
     // re-observe node in Uncloak instance
-    this.instance.nodeObserver.observe( this.node );
+    if ( reobserve ) this.instance.nodeObserver.observe( this.node );
   }
 
   // CALLBACK helper
