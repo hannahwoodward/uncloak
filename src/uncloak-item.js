@@ -75,7 +75,7 @@ export class UncloakItem {
       doUncloak();
       return;
     }
-    setTimeout( doUncloak(), final_delay );
+    setTimeout( doUncloak, final_delay );
   }
 
   // CALLBACK helper
