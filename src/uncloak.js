@@ -33,12 +33,20 @@ export default class Uncloak {
       for ( let i = 0; i < entries.length; i++ ) {
         if ( entries[i].isIntersecting ) {
           const uncloak_item = this.getItemByNode( entries[i].target );
-          base_delay = uncloak_item.process( base_delay );
-          this.nodeObserver.unobserve( entries[i].target );
+          const item_height = entries[i].boundingClientRect.height;
+          const viewport_visibility_threshold = ( uncloak_item.threshold * entries[i].rootBounds.height );
+          const item_can_reach_threshold = ( item_height >= viewport_visibility_threshold );
+          const should_reveal_item = item_can_reach_threshold ? entries[i].intersectionRect.height >= viewport_visibility_threshold : entries[i].isIntersecting;
+
+          if ( should_reveal_item ) {
+            base_delay = uncloak_item.process( base_delay );
+            this.nodeObserver.unobserve( entries[i].target );
+          }
         }
       }
     }, {
-      rootMargin: '10% 0%'
+      rootMargin: '10% 0%',
+      threshold: [ 0.1, 0.2, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9 ]
     } );
 
     // initial load

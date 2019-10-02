@@ -14,6 +14,7 @@ export class UncloakItem {
     this.lazyContent = node.hasAttribute( 'data-uncloak-ignore-lazy' ) ? [] : node.querySelectorAll( '[data-uncloak-src], [data-uncloak-srcset]' );
     this.lazyContentLoadStatus = ( this.lazyContent[0] ? -1 : 2 ), // NB: -1 => unloaded, 1 => loading, 2 => loaded
     this.node = node;
+    this.threshold = parseFloat( node.getAttribute( 'data-uncloak-threshold' ) ) || 0;
 
     this.lazyContentObserver = null;
   }
