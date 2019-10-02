@@ -65,9 +65,9 @@ export default class Uncloak {
       let uncloak_item;
 
       if ( raw_el.hasAttribute( 'data-uncloak-video' ) ) {
-        uncloak_item = new UncloakVideoItem( raw_el, this.itemOptions )
+        uncloak_item = new UncloakVideoItem( raw_el, this, this.itemOptions );
       } else {
-        uncloak_item = new UncloakItem( raw_el, this.itemOptions )
+        uncloak_item = new UncloakItem( raw_el, this, this.itemOptions );
       }
 
       raw_el.id = 'uncloak-' + true_index;

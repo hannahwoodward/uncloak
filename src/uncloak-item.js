@@ -1,5 +1,5 @@
 export class UncloakItem {
-  constructor( node, options ) {
+  constructor( node, instance, options ) {
     node.removeAttribute( 'data-uncloak-new' );
 
     this.callbacks = options.callbacks || { init: [], uncloak: [] };
@@ -11,6 +11,7 @@ export class UncloakItem {
     };
     this.delayType = node.getAttribute( 'data-uncloak-delay-type' ) || null;
     this.delayTypes = options.delayTypes || {};
+    this.instance = instance;
     this.lazyContent = node.hasAttribute( 'data-uncloak-ignore-lazy' ) ? [] : node.querySelectorAll( '[data-uncloak-src], [data-uncloak-srcset]' );
     this.lazyContentLoadStatus = ( this.lazyContent[0] ? -1 : 2 ), // NB: -1 => unloaded, 1 => loading, 2 => loaded
     this.node = node;
@@ -86,6 +87,8 @@ export class UncloakItem {
       y1: null
     }
     this.node.classList.add( 'uncloak--cloaked' )
+    // re-observe node in Uncloak instance
+    this.instance.nodeObserver.observe( this.node );
   }
 
   // CALLBACK helper

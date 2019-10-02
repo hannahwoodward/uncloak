@@ -3,8 +3,8 @@
 import { UncloakItem } from './uncloak-item.js';
 
 export class UncloakVideoItem extends UncloakItem {
-  constructor( node, options ) {
-    super( node, options );
+  constructor( node, instance, options ) {
+    super( node, instance, options );
 
     this.videoPlayer = null;
 
