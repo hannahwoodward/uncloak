@@ -78,6 +78,15 @@ export class UncloakItem {
     setTimeout( doUncloak, final_delay );
   }
 
+  reset() {
+    this.cloaked = true
+    this.delayTimer = {
+      y0: 0,
+      y1: null
+    }
+    this.node.classList.add( 'uncloak--cloaked' )
+  }
+
   // CALLBACK helper
   runCallbacks( type ) {
     const cb = this.callbacks[type];
