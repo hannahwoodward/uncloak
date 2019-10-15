@@ -3,6 +3,7 @@ env:
   es6: true
 extends: eslint:recommended
 parserOptions:
+  ecmaVersion: 6
   sourceType: module
 rules:
   no-console:
@@ -19,7 +20,7 @@ rules:
     - single
   space-in-parens:
     - 1
-    - always
+    - never
   space-before-blocks:
     - 1
   space-before-function-paren:
@@ -43,7 +44,7 @@ rules:
     - 1
   semi:
     - 2
-    - always
+    - never
   strict:
     - 2
     - function
