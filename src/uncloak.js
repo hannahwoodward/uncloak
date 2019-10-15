@@ -4,6 +4,7 @@ import { UncloakVideoItem } from './uncloak-video-item.js';
 export default class Uncloak {
   constructor( options ) {
     this.items = [];
+    this.hasResizeListener = false;
     this.nodeObserver = null;
 
     // Sent to UncloakItem
@@ -59,6 +60,7 @@ export default class Uncloak {
     }
 
     const offset = this.items.length;
+    let should_add_resize_listener = false;
     for ( let i = 0; i < raw_elements.length; i++ ) {
       const raw_el = raw_elements[i];
       const true_index = offset + i;
@@ -66,6 +68,7 @@ export default class Uncloak {
 
       if ( raw_el.hasAttribute( 'data-uncloak-video' ) ) {
         uncloak_item = new UncloakVideoItem( raw_el, this, this.itemOptions );
+        should_add_resize_listener = true;
       } else {
         uncloak_item = new UncloakItem( raw_el, this, this.itemOptions );
       }
@@ -74,6 +77,25 @@ export default class Uncloak {
       uncloak_item.init();
       this.nodeObserver.observe( raw_el );
       this.items.push( uncloak_item );
+    }
+
+    if (should_add_resize_listener && !this.hasResizeListener) {
+      this.hasResizeListener = true;
+      const update_videos = () => {
+        for (let i = 0; i < this.items.length; i++) {
+          if ( 'videoPlayer' in this.items[i] ) {
+            if ( this.items[i].videoPlayer.isResponsive ) {
+              this.items[i].videoPlayer.setSrc();
+            }
+            if ( this.items[i].videoPlayer.requiresResize ) {
+              this.items[i].videoPlayer.resizeVideo();
+            }
+          }
+        }
+      }
+
+      window.addEventListener( 'orientationchange', update_videos );
+      window.addEventListener( 'resize', update_videos );
     }
   }
 
