@@ -36,7 +36,7 @@ export class UncloakVideoItem extends UncloakItem {
       // can stop observing if we no longer need to play/pause video
       this.lazyContentObserver.disconnect();
     }, {
-      rootMargin: '25%'
+      rootMargin: '10%'
     } );
 
     this.lazyContentObserver.observe( this.videoPlayer.container );
