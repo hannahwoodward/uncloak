@@ -32,12 +32,16 @@ export default class Uncloak {
     this.nodeObserver = new IntersectionObserver( entries => {
       let base_delay = 0;
       for ( let i = 0; i < entries.length; i++ ) {
-        if ( entries[i].isIntersecting ) {
+        const b_rect = entries[i].boundingClientRect;
+        // browsers give negative result if entry covers the screen, so test to see if it covers the screen
+        const is_intersecting = entries[i].isIntersecting || ( b_rect.top <= 0 && b_rect.left <= 0 && b_rect.width >= window.innerWidth && b_rect.height >= window.innerHeight );
+
+        if ( is_intersecting ) {
           const uncloak_item = this.getItemByNode( entries[i].target );
-          const item_height = entries[i].boundingClientRect.height;
+          const item_height = b_rect.height;
           const viewport_visibility_threshold = ( uncloak_item.threshold * entries[i].rootBounds.height );
           const item_can_reach_threshold = ( item_height >= viewport_visibility_threshold );
-          const should_reveal_item = item_can_reach_threshold ? entries[i].intersectionRect.height >= viewport_visibility_threshold : entries[i].isIntersecting;
+          const should_reveal_item = item_can_reach_threshold ? entries[i].intersectionRect.height >= viewport_visibility_threshold : is_intersecting;
 
           if ( should_reveal_item ) {
             base_delay = uncloak_item.process( base_delay );
