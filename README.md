@@ -2,7 +2,7 @@
 
 - Uses IntersectionObserver API to reveal elements, lazy load content, and autoplay/pause videos as they scroll into view
 - Supports dynamically added elements
-- 4KB minified
+- 5KB minified (inc. VideoPlayer)
 
 ### How it works
 
