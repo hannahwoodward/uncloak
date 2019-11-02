@@ -44,6 +44,10 @@ export class UncloakVideoItem extends UncloakItem {
   }
 
   // MEDIA helpers
+  mediaLoaded() {
+    return (!this.videoPlayer.isDisabled() || this.lazyContentLoadStatus === 2)
+  }
+
   toggleVideoPlay(should_play) {
     if (should_play) {
       this.videoPlayer.play()

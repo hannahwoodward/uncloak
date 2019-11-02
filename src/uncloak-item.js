@@ -55,7 +55,7 @@ export class UncloakItem {
         }
         base_delay++
       }
-      if (this.imagesLoaded()) {
+      if (this.mediaLoaded()) {
         this.uncloak()
       } else {
         // set uncloak ready status for when images have finished loading
@@ -122,7 +122,7 @@ export class UncloakItem {
 
   // MEDIA helpers
   loadLazyContent() {
-    if (this.imagesLoaded() || this.lazyContentLoadStatus === 1) {
+    if (this.mediaLoaded() || this.lazyContentLoadStatus === 1) {
       return
     }
     this.lazyContentLoadStatus = 1
@@ -153,7 +153,7 @@ export class UncloakItem {
       el.addEventListener('load', loaded(el), false)
     }
   }
-  imagesLoaded() {
+  mediaLoaded() {
     return (this.lazyContentLoadStatus === 2)
   }
 }
