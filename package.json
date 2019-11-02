@@ -1,7 +1,13 @@
 {
-  "name": "uncloak",
+  "name": "uncloakjs",
   "version": "1.0.0",
   "author": "Hannah Woodward",
+  "files": [
+    "dist/"
+  ],
+  "browser": "dist/uncloak.min.js",
+  "main": "dist/uncloak.js",
+  "module": "dist/lozad.esm.js",
   "scripts": {
     "lint": "eslint src/*.js",
     "watch": "rollup -c -w",
@@ -15,7 +21,15 @@
     "rollup-plugin-uglify": "^6.0.2"
   },
   "description": "IntersectionObserver-based lazy loader and content revealer",
-  "main": "src/uncloak.js",
+  "keywords": [
+    "iframe",
+    "image",
+    "lazy",
+    "loader",
+    "lazyloader",
+    "lazyload",
+    "video"
+  ],
   "repository": "https://github.com/hannahwoodward/uncloak",
-  "license": "MIT"
+  "license": "BSD-3-Clause"
 }
