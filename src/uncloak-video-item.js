@@ -17,6 +17,12 @@ export class UncloakVideoItem extends UncloakItem {
         this.loadLazyContent()
         this.uncloak()
       })
+
+      const play = () => {
+        this.toggleVideoPlay(true)
+      }
+
+      this.callbacks.uncloak.push(play)
     }
   }
 
