@@ -2,7 +2,12 @@ export class UncloakItem {
   constructor(node, instance, options) {
     node.removeAttribute('data-uncloak-new')
 
-    this.callbacks = options.callbacks || { init: [], uncloak: [] }
+    this.callbacks = { init: [], uncloak: [] }
+    for (const key in this.callbacks) {
+      if (key in options.callbacks) {
+        this.callbacks[key] = options.callbacks[key]
+      }
+    }
     this.cloaked = true
     this.uncloakReady = false
     this.delayTimer = {
