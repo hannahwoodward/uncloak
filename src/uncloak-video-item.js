@@ -1,5 +1,4 @@
-/* global VideoPlayer */
-// import { VideoPlayer } from './video-player.js'
+import { VideoPlayer } from './video-player.js'
 import { UncloakItem } from './uncloak-item.js'
 
 export class UncloakVideoItem extends UncloakItem {
