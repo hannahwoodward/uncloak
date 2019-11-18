@@ -1,13 +1,13 @@
 {
   "name": "uncloakjs",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Hannah Woodward",
   "files": [
     "dist/"
   ],
   "browser": "dist/uncloak.min.js",
   "main": "dist/uncloak.js",
-  "module": "dist/lozad.esm.js",
+  "module": "dist/uncloak.esm.js",
   "scripts": {
     "lint": "eslint src/*.js",
     "watch": "rollup -c -w",
