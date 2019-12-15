@@ -6,23 +6,28 @@ export class UncloakVideoItem extends UncloakItem {
     super(node, instance, options)
 
     this.videoPlayer = null
+    this.videoAutoplay = !node.hasAttribute('data-uncloak-video-manual')
 
     if (typeof VideoPlayer !== 'undefined') {
       const container = node.querySelector('.' + node.getAttribute('data-uncloak-video'))
       this.videoPlayer = new VideoPlayer({ container: container, autoplay: 0 }, false)
-      this.videoPlayer.addCallback('firstPlay', () => {
-        this.uncloak()
-      })
+
       this.videoPlayer.addCallback('error', () => {
         this.loadLazyContent()
         this.uncloak()
       })
 
-      const play = () => {
-        this.toggleVideoPlay(true)
-      }
+      if ( this.videoAutoplay ) {
+        this.videoPlayer.addCallback( 'firstPlay', () => {
+          this.uncloak();
+        } );
 
-      this.callbacks.uncloak.push(play)
+        const play = ( item ) => {
+          this.toggleVideoPlay( true );
+        };
+
+        this.callbacks.uncloak.push( play );
+      }
     }
   }
 
