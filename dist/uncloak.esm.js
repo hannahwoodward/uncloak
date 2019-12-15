@@ -2,7 +2,12 @@ class UncloakItem {
   constructor(node, instance, options) {
     node.removeAttribute('data-uncloak-new');
 
-    this.callbacks = options.callbacks || { init: [], uncloak: [] };
+    this.callbacks = { init: [], uncloak: [] };
+    for (const key in this.callbacks) {
+      if (key in options.callbacks) {
+        this.callbacks[key] = options.callbacks[key];
+      }
+    }
     this.cloaked = true;
     this.uncloakReady = false;
     this.delayTimer = {
@@ -50,7 +55,7 @@ class UncloakItem {
         };
         base_delay++;
       }
-      if (this.imagesLoaded()) {
+      if (this.mediaLoaded()) {
         this.uncloak();
       } else {
         // set uncloak ready status for when images have finished loading
@@ -117,7 +122,7 @@ class UncloakItem {
 
   // MEDIA helpers
   loadLazyContent() {
-    if (this.imagesLoaded() || this.lazyContentLoadStatus === 1) {
+    if (this.mediaLoaded() || this.lazyContentLoadStatus === 1) {
       return
     }
     this.lazyContentLoadStatus = 1;
@@ -148,7 +153,7 @@ class UncloakItem {
       el.addEventListener('load', loaded(el), false);
     }
   }
-  imagesLoaded() {
+  mediaLoaded() {
     return (this.lazyContentLoadStatus === 2)
   }
 }
@@ -158,11 +163,13 @@ class VideoPlayer {
     this.container = options.container;
     this.video = options.video || options.container.querySelector('video');
 
-    this.promise = null;
-    this.loadStatus = 0; // 0 = not loaded, 1 = loading, 2 = loaded
-    this.error = false;
-    this.requiresResize = this.container.hasAttribute('data-video-resize');
     this.autoplay = options.autoplay || 0;
+    this.error = false;
+    this.isResponsive = false;
+    this.loadStatus = 0; // 0 = not loaded, 1 = loading, 2 = loaded
+    this.promise = null;
+    this.requiresResize = this.container.hasAttribute('data-video-resize');
+    this.sources = [];
 
     this.callbacks = {
       durationchange: [],
@@ -182,11 +189,11 @@ class VideoPlayer {
     }
 
     this.loadStatus = 1;
+
+    this.extractSources();
+
     if (!this.video.src) {
-      // nb safari 11 gets angry when setting source if video not muted
-      // so muted attribute should be set in html
-      this.video.src = this.video.getAttribute('data-src');
-      this.video.removeAttribute('data-src');
+      this.setSrc();
     }
 
     this.video.addEventListener('loadedmetadata', () => {
@@ -220,6 +227,44 @@ class VideoPlayer {
     }, false);
   }
 
+  disable() {
+    this.container.classList.add('video-disabled');
+    this.error = true;
+    this.runCallbacks('error');
+  }
+
+  extractSources() {
+    let sources = this.video.getAttribute('data-video-srcset') || null;
+    if (sources !== null) {
+      const srcset_regex = /^\s*(.+)\s+(\d+)([wh])?\s*$/;
+      sources = sources.split(',');
+      for (let i = 0; i < sources.length; i++) {
+        const source = sources[i].match(srcset_regex);
+        if (source) {
+          this.sources.push({
+            src: source[1],
+            width: parseInt(source[2])
+          });
+        }
+      }
+
+      // sort sources by smallest -> largest widths
+      this.sources.sort((a, b) => {
+        return a.width - b.width
+      });
+
+    } else {
+      sources = this.video.getAttribute('data-video-src');
+      if (sources) {
+        this.sources.push({ src: sources });
+        this.video.removeAttribute('data-video-src');
+      }
+
+    }
+
+    this.isResponsive = (this.sources.length > 1);
+  }
+
   play() {
     if (this.isLoading() || !this.video.paused || this.promise !== null) {
       return
@@ -249,16 +294,14 @@ class VideoPlayer {
     }, 100);
   }
 
-  disable() {
-    this.container.classList.add('video-disabled');
-    this.error = true;
-    this.runCallbacks('error');
-  }
-
   pause() {
     if (this.pauseReady()) {
       this.video.pause();
     }
+  }
+
+  pauseReady() {
+    return (!this.video.paused && this.promise === null && this.loadStatus === 2)
   }
 
   reset() {
@@ -268,8 +311,30 @@ class VideoPlayer {
     }
   }
 
-  pauseReady() {
-    return (!this.video.paused && this.promise === null && this.loadStatus === 2)
+  setSrc() {
+    // nb safari 11 gets angry when setting source if video not muted
+    // so muted attribute should be set in html
+    if (this.isResponsive) {
+      const width = this.container.clientWidth;
+      const current_src = this.video.src.replace(/(https?:)/, '');
+      const is_paused = this.video.paused;
+
+      // sources are ordered small to large, so we want the next
+      // largest source after the container width
+      for (let i = 0; i < this.sources.length; i++) {
+        if (width <= this.sources[i].width || i === this.sources.length - 1) {
+          if (current_src !== this.sources[i].src) {
+            this.video.src = this.sources[i].src;
+            if (!is_paused) {
+              this.play();
+            }
+          }
+          return
+        }
+      }
+    }
+
+    this.video.src = this.sources[0].src;
   }
 
   addCallback(type, fx) {
@@ -316,24 +381,33 @@ class VideoPlayer {
   }
 }
 
-/* global VideoPlayer */
-
 class UncloakVideoItem extends UncloakItem {
   constructor(node, instance, options) {
     super(node, instance, options);
 
     this.videoPlayer = null;
+    this.videoAutoplay = !node.hasAttribute('data-uncloak-video-manual');
 
     if (typeof VideoPlayer !== 'undefined') {
       const container = node.querySelector('.' + node.getAttribute('data-uncloak-video'));
       this.videoPlayer = new VideoPlayer({ container: container, autoplay: 0 }, false);
-      this.videoPlayer.addCallback('firstPlay', () => {
-        this.uncloak();
-      });
+
       this.videoPlayer.addCallback('error', () => {
         this.loadLazyContent();
         this.uncloak();
       });
+
+      if (this.videoAutoplay) {
+        this.videoPlayer.addCallback('firstPlay', () => {
+          this.uncloak();
+        });
+
+        const play = () => {
+          this.toggleVideoPlay(true);
+        };
+
+        this.callbacks.uncloak.push(play);
+      }
     }
   }
 
@@ -360,6 +434,10 @@ class UncloakVideoItem extends UncloakItem {
   }
 
   // MEDIA helpers
+  mediaLoaded() {
+    return (!this.videoPlayer.isDisabled() || this.lazyContentLoadStatus === 2)
+  }
+
   toggleVideoPlay(should_play) {
     if (should_play) {
       this.videoPlayer.play();
@@ -403,7 +481,7 @@ class Uncloak {
         const b_rect = entries[i].boundingClientRect;
         // browsers give negative result if entry covers the screen, so test to see if it covers the screen
         // use document.body.clientWidth instead of window.innerWidth for IE scrollbars
-        const is_intersecting = entries[i].isIntersecting || (b_rect.top <= 0 && b_rect.left <= 0 && b_rect.width >= document.body.clientWidth && b_rect.height >= window.innerHeight);
+        const is_intersecting = entries[i].isIntersecting || entries[i].intersectionRatio > 0 || (b_rect.top <= window.innerHeight && b_rect.left <= 0 && b_rect.width >= document.body.clientWidth && b_rect.height >= window.innerHeight);
 
         if (is_intersecting) {
           const uncloak_item = this.getItemByNode(entries[i].target);

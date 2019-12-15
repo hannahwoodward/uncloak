@@ -1,10 +1,18 @@
-var uncloak = (function () {
-  'use strict';
+(function (global, factory) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+  typeof define === 'function' && define.amd ? define(factory) :
+  (global = global || self, global.Uncloak = factory());
+}(this, function () { 'use strict';
 
   var UncloakItem = function UncloakItem(node, instance, options) {
     node.removeAttribute('data-uncloak-new');
 
-    this.callbacks = options.callbacks || { init: [], uncloak: [] };
+    this.callbacks = { init: [], uncloak: [] };
+    for (var key in this.callbacks) {
+      if (key in options.callbacks) {
+        this.callbacks[key] = options.callbacks[key];
+      }
+    }
     this.cloaked = true;
     this.uncloakReady = false;
     this.delayTimer = {
@@ -54,7 +62,7 @@ var uncloak = (function () {
         };
         base_delay++;
       }
-      if (this.imagesLoaded()) {
+      if (this.mediaLoaded()) {
         this.uncloak();
       } else {
         // set uncloak ready status for when images have finished loading
@@ -127,7 +135,7 @@ var uncloak = (function () {
   UncloakItem.prototype.loadLazyContent = function loadLazyContent () {
       var this$1 = this;
 
-    if (this.imagesLoaded() || this.lazyContentLoadStatus === 1) {
+    if (this.mediaLoaded() || this.lazyContentLoadStatus === 1) {
       return
     }
     this.lazyContentLoadStatus = 1;
@@ -158,7 +166,7 @@ var uncloak = (function () {
       el.addEventListener('load', loaded(el), false);
     }
   };
-  UncloakItem.prototype.imagesLoaded = function imagesLoaded () {
+  UncloakItem.prototype.mediaLoaded = function mediaLoaded () {
     return (this.lazyContentLoadStatus === 2)
   };
 
@@ -166,11 +174,13 @@ var uncloak = (function () {
     this.container = options.container;
     this.video = options.video || options.container.querySelector('video');
 
-    this.promise = null;
-    this.loadStatus = 0; // 0 = not loaded, 1 = loading, 2 = loaded
-    this.error = false;
-    this.requiresResize = this.container.hasAttribute('data-video-resize');
     this.autoplay = options.autoplay || 0;
+    this.error = false;
+    this.isResponsive = false;
+    this.loadStatus = 0; // 0 = not loaded, 1 = loading, 2 = loaded
+    this.promise = null;
+    this.requiresResize = this.container.hasAttribute('data-video-resize');
+    this.sources = [];
 
     this.callbacks = {
       durationchange: [],
@@ -192,11 +202,11 @@ var uncloak = (function () {
     }
 
     this.loadStatus = 1;
+
+    this.extractSources();
+
     if (!this.video.src) {
-      // nb safari 11 gets angry when setting source if video not muted
-      // so muted attribute should be set in html
-      this.video.src = this.video.getAttribute('data-src');
-      this.video.removeAttribute('data-src');
+      this.setSrc();
     }
 
     this.video.addEventListener('loadedmetadata', function () {
@@ -230,6 +240,44 @@ var uncloak = (function () {
     }, false);
   };
 
+  VideoPlayer.prototype.disable = function disable () {
+    this.container.classList.add('video-disabled');
+    this.error = true;
+    this.runCallbacks('error');
+  };
+
+  VideoPlayer.prototype.extractSources = function extractSources () {
+    var sources = this.video.getAttribute('data-video-srcset') || null;
+    if (sources !== null) {
+      var srcset_regex = /^\s*(.+)\s+(\d+)([wh])?\s*$/;
+      sources = sources.split(',');
+      for (var i = 0; i < sources.length; i++) {
+        var source = sources[i].match(srcset_regex);
+        if (source) {
+          this.sources.push({
+            src: source[1],
+            width: parseInt(source[2])
+          });
+        }
+      }
+
+      // sort sources by smallest -> largest widths
+      this.sources.sort(function (a, b) {
+        return a.width - b.width
+      });
+
+    } else {
+      sources = this.video.getAttribute('data-video-src');
+      if (sources) {
+        this.sources.push({ src: sources });
+        this.video.removeAttribute('data-video-src');
+      }
+
+    }
+
+    this.isResponsive = (this.sources.length > 1);
+  };
+
   VideoPlayer.prototype.play = function play () {
       var this$1 = this;
 
@@ -261,16 +309,14 @@ var uncloak = (function () {
     }, 100);
   };
 
-  VideoPlayer.prototype.disable = function disable () {
-    this.container.classList.add('video-disabled');
-    this.error = true;
-    this.runCallbacks('error');
-  };
-
   VideoPlayer.prototype.pause = function pause () {
     if (this.pauseReady()) {
       this.video.pause();
     }
+  };
+
+  VideoPlayer.prototype.pauseReady = function pauseReady () {
+    return (!this.video.paused && this.promise === null && this.loadStatus === 2)
   };
 
   VideoPlayer.prototype.reset = function reset () {
@@ -280,8 +326,30 @@ var uncloak = (function () {
     }
   };
 
-  VideoPlayer.prototype.pauseReady = function pauseReady () {
-    return (!this.video.paused && this.promise === null && this.loadStatus === 2)
+  VideoPlayer.prototype.setSrc = function setSrc () {
+    // nb safari 11 gets angry when setting source if video not muted
+    // so muted attribute should be set in html
+    if (this.isResponsive) {
+      var width = this.container.clientWidth;
+      var current_src = this.video.src.replace(/(https?:)/, '');
+      var is_paused = this.video.paused;
+
+      // sources are ordered small to large, so we want the next
+      // largest source after the container width
+      for (var i = 0; i < this.sources.length; i++) {
+        if (width <= this.sources[i].width || i === this.sources.length - 1) {
+          if (current_src !== this.sources[i].src) {
+            this.video.src = this.sources[i].src;
+            if (!is_paused) {
+              this.play();
+            }
+          }
+          return
+        }
+      }
+    }
+
+    this.video.src = this.sources[0].src;
   };
 
   VideoPlayer.prototype.addCallback = function addCallback (type, fx) {
@@ -327,8 +395,6 @@ var uncloak = (function () {
     this.video.style.width = '100%';
   };
 
-  /* global VideoPlayer */
-
   var UncloakVideoItem = /*@__PURE__*/(function (UncloakItem) {
     function UncloakVideoItem(node, instance, options) {
       var this$1 = this;
@@ -336,17 +402,28 @@ var uncloak = (function () {
       UncloakItem.call(this, node, instance, options);
 
       this.videoPlayer = null;
+      this.videoAutoplay = !node.hasAttribute('data-uncloak-video-manual');
 
       if (typeof VideoPlayer !== 'undefined') {
         var container = node.querySelector('.' + node.getAttribute('data-uncloak-video'));
         this.videoPlayer = new VideoPlayer({ container: container, autoplay: 0 }, false);
-        this.videoPlayer.addCallback('firstPlay', function () {
-          this$1.uncloak();
-        });
+
         this.videoPlayer.addCallback('error', function () {
           this$1.loadLazyContent();
           this$1.uncloak();
         });
+
+        if (this.videoAutoplay) {
+          this.videoPlayer.addCallback('firstPlay', function () {
+            this$1.uncloak();
+          });
+
+          var play = function () {
+            this$1.toggleVideoPlay(true);
+          };
+
+          this.callbacks.uncloak.push(play);
+        }
       }
     }
 
@@ -379,6 +456,10 @@ var uncloak = (function () {
     };
 
     // MEDIA helpers
+    UncloakVideoItem.prototype.mediaLoaded = function mediaLoaded () {
+      return (!this.videoPlayer.isDisabled() || this.lazyContentLoadStatus === 2)
+    };
+
     UncloakVideoItem.prototype.toggleVideoPlay = function toggleVideoPlay (should_play) {
       if (should_play) {
         this.videoPlayer.play();
@@ -425,7 +506,7 @@ var uncloak = (function () {
         var b_rect = entries[i].boundingClientRect;
         // browsers give negative result if entry covers the screen, so test to see if it covers the screen
         // use document.body.clientWidth instead of window.innerWidth for IE scrollbars
-        var is_intersecting = entries[i].isIntersecting || (b_rect.top <= 0 && b_rect.left <= 0 && b_rect.width >= document.body.clientWidth && b_rect.height >= window.innerHeight);
+        var is_intersecting = entries[i].isIntersecting || entries[i].intersectionRatio > 0 || (b_rect.top <= window.innerHeight && b_rect.left <= 0 && b_rect.width >= document.body.clientWidth && b_rect.height >= window.innerHeight);
 
         if (is_intersecting) {
           var uncloak_item = this$1.getItemByNode(entries[i].target);
@@ -504,4 +585,4 @@ var uncloak = (function () {
 
   return Uncloak;
 
-}());
+}));
