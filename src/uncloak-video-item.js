@@ -17,16 +17,16 @@ export class UncloakVideoItem extends UncloakItem {
         this.uncloak()
       })
 
-      if ( this.videoAutoplay ) {
-        this.videoPlayer.addCallback( 'firstPlay', () => {
-          this.uncloak();
-        } );
+      if (this.videoAutoplay) {
+        this.videoPlayer.addCallback('firstPlay', () => {
+          this.uncloak()
+        })
 
-        const play = ( item ) => {
-          this.toggleVideoPlay( true );
-        };
+        const play = () => {
+          this.toggleVideoPlay(true)
+        }
 
-        this.callbacks.uncloak.push( play );
+        this.callbacks.uncloak.push(play)
       }
     }
   }

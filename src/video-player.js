@@ -24,7 +24,9 @@ export class VideoPlayer {
   }
 
   init() {
-    if (this.loadStatus > 0) return
+    if (this.loadStatus > 0) {
+      return
+    }
 
     this.loadStatus = 1
 
@@ -87,7 +89,9 @@ export class VideoPlayer {
       }
 
       // sort sources by smallest -> largest widths
-      this.sources.sort((a, b) => { return a.width - b.width })
+      this.sources.sort((a, b) => {
+        return a.width - b.width
+      })
 
     } else {
       sources = this.video.getAttribute('data-video-src')
@@ -152,7 +156,7 @@ export class VideoPlayer {
     // so muted attribute should be set in html
     if (this.isResponsive) {
       const width = this.container.clientWidth
-      const current_src = this.video.src.replace(/(https?\:)/, '')
+      const current_src = this.video.src.replace(/(https?:)/, '')
       const is_paused = this.video.paused
 
       // sources are ordered small to large, so we want the next
@@ -170,7 +174,7 @@ export class VideoPlayer {
       }
     }
 
-    this.video.src = this.sources[0].src;
+    this.video.src = this.sources[0].src
   }
 
   addCallback(type, fx) {
