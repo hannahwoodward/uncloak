@@ -3,11 +3,13 @@ export class VideoPlayer {
     this.container = options.container
     this.video = options.video || options.container.querySelector('video')
 
-    this.promise = null
-    this.loadStatus = 0 // 0 = not loaded, 1 = loading, 2 = loaded
-    this.error = false
-    this.requiresResize = this.container.hasAttribute('data-video-resize')
     this.autoplay = options.autoplay || 0
+    this.error = false
+    this.isResponsive = false
+    this.loadStatus = 0 // 0 = not loaded, 1 = loading, 2 = loaded
+    this.promise = null
+    this.requiresResize = this.container.hasAttribute('data-video-resize')
+    this.sources = []
 
     this.callbacks = {
       durationchange: [],
@@ -22,16 +24,14 @@ export class VideoPlayer {
   }
 
   init() {
-    if (this.loadStatus > 0) {
-      return
-    }
+    if (this.loadStatus > 0) return
 
     this.loadStatus = 1
+
+    this.extractSources()
+
     if (!this.video.src) {
-      // nb safari 11 gets angry when setting source if video not muted
-      // so muted attribute should be set in html
-      this.video.src = this.video.getAttribute('data-src')
-      this.video.removeAttribute('data-src')
+      this.setSrc()
     }
 
     this.video.addEventListener('loadedmetadata', () => {
@@ -65,6 +65,42 @@ export class VideoPlayer {
     }, false)
   }
 
+  disable() {
+    this.container.classList.add('video-disabled')
+    this.error = true
+    this.runCallbacks('error')
+  }
+
+  extractSources() {
+    let sources = this.video.getAttribute('data-video-srcset') || null
+    if (sources !== null) {
+      const srcset_regex = /^\s*(.+)\s+(\d+)([wh])?\s*$/
+      sources = sources.split(',')
+      for (let i = 0; i < sources.length; i++) {
+        const source = sources[i].match(srcset_regex)
+        if (source) {
+          this.sources.push({
+            src: source[1],
+            width: parseInt(source[2])
+          })
+        }
+      }
+
+      // sort sources by smallest -> largest widths
+      this.sources.sort((a, b) => { return a.width - b.width })
+
+    } else {
+      sources = this.video.getAttribute('data-video-src')
+      if (sources) {
+        this.sources.push({ src: sources })
+        this.video.removeAttribute('data-video-src')
+      }
+
+    }
+
+    this.isResponsive = (this.sources.length > 1)
+  }
+
   play() {
     if (this.isLoading() || !this.video.paused || this.promise !== null) {
       return
@@ -94,16 +130,14 @@ export class VideoPlayer {
     }, 100)
   }
 
-  disable() {
-    this.container.classList.add('video-disabled')
-    this.error = true
-    this.runCallbacks('error')
-  }
-
   pause() {
     if (this.pauseReady()) {
       this.video.pause()
     }
+  }
+
+  pauseReady() {
+    return (!this.video.paused && this.promise === null && this.loadStatus === 2)
   }
 
   reset() {
@@ -113,8 +147,30 @@ export class VideoPlayer {
     }
   }
 
-  pauseReady() {
-    return (!this.video.paused && this.promise === null && this.loadStatus === 2)
+  setSrc() {
+    // nb safari 11 gets angry when setting source if video not muted
+    // so muted attribute should be set in html
+    if (this.isResponsive) {
+      const width = this.container.clientWidth
+      const current_src = this.video.src.replace(/(https?\:)/, '')
+      const is_paused = this.video.paused
+
+      // sources are ordered small to large, so we want the next
+      // largest source after the container width
+      for (let i = 0; i < this.sources.length; i++) {
+        if (width <= this.sources[i].width || i === this.sources.length - 1) {
+          if (current_src !== this.sources[i].src) {
+            this.video.src = this.sources[i].src
+            if (!is_paused) {
+              this.play()
+            }
+          }
+          return
+        }
+      }
+    }
+
+    this.video.src = this.sources[0].src;
   }
 
   addCallback(type, fx) {
