@@ -1,8 +1,6 @@
-import pkg from './package.json';
-
-import { terser } from 'rollup-plugin-terser';
-import buble from 'rollup-plugin-buble';
-import { uglify } from 'rollup-plugin-uglify';
+import { terser } from 'rollup-plugin-terser'
+import buble from 'rollup-plugin-buble'
+import { uglify } from 'rollup-plugin-uglify'
 
 export default [
   {
@@ -48,4 +46,4 @@ export default [
       uglify()
     ]
   }
-];
+]
