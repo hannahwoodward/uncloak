@@ -35,7 +35,7 @@ export default class Uncloak {
         const b_rect = entries[i].boundingClientRect
         // browsers give negative result if entry covers the screen, so test to see if it covers the screen
         // use document.body.clientWidth instead of window.innerWidth for IE scrollbars
-        const is_intersecting = entries[i].isIntersecting || (b_rect.top <= 0 && b_rect.left <= 0 && b_rect.width >= document.body.clientWidth && b_rect.height >= window.innerHeight)
+        const is_intersecting = entries[i].isIntersecting || entries[i].intersectionRatio > 0 || (b_rect.top <= window.innerHeight && b_rect.left <= 0 && b_rect.width >= document.body.clientWidth && b_rect.height >= window.innerHeight)
 
         if (is_intersecting) {
           const uncloak_item = this.getItemByNode(entries[i].target)
