@@ -2,7 +2,7 @@
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
   (global = global || self, global.Uncloak = factory());
-}(this, function () { 'use strict';
+}(this, (function () { 'use strict';
 
   var UncloakItem = function UncloakItem(node, instance, options) {
     node.removeAttribute('data-uncloak-new');
@@ -162,7 +162,9 @@
       if (lazy_srcset) {
         el.srcset = lazy_srcset;
       }
-      el.src = el.getAttribute('data-uncloak-src');
+      if (el.hasAttribute('data-uncloak-src')) {
+        el.src = el.getAttribute('data-uncloak-src');
+      }
       el.addEventListener('load', loaded(el), false);
     }
   };
@@ -585,4 +587,4 @@
 
   return Uncloak;
 
-}));
+})));

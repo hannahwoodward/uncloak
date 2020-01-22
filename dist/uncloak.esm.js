@@ -149,7 +149,9 @@ class UncloakItem {
       if (lazy_srcset) {
         el.srcset = lazy_srcset;
       }
-      el.src = el.getAttribute('data-uncloak-src');
+      if (el.hasAttribute('data-uncloak-src')) {
+        el.src = el.getAttribute('data-uncloak-src');
+      }
       el.addEventListener('load', loaded(el), false);
     }
   }
