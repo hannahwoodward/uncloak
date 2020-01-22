@@ -64,6 +64,8 @@ export default class Uncloak {
       return
     }
 
+    raw_elements = raw_elements.filter(item => item.hasAttribute('data-uncloak-new'))
+
     const offset = this.items.length
     let should_add_resize_listener = false
     for (let i = 0; i < raw_elements.length; i++) {
