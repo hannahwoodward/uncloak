@@ -22,7 +22,7 @@
     this.delayType = node.getAttribute('data-uncloak-delay-type') || null;
     this.delayTypes = options.delayTypes || {};
     this.instance = instance;
-    this.lazyContent = node.hasAttribute('data-uncloak-ignore-lazy') ? [] : node.querySelectorAll('[data-uncloak-src], [data-uncloak-srcset]');
+    this.lazyContent = node.hasAttribute('data-uncloak-ignore-lazy') ? [] : node.querySelectorAll('[data-uncloak-src], [data-uncloak-srcset], [data-uncloak-picture]');
     this.lazyContentLoadStatus = (this.lazyContent[0] ? -1 : 2); // NB: -1 => unloaded, 1 => loading, 2 => loaded
     this.node = node;
     this.threshold = parseFloat(node.getAttribute('data-uncloak-threshold')) || 0;
@@ -138,14 +138,19 @@
     if (this.mediaLoaded() || this.lazyContentLoadStatus === 1) {
       return
     }
+
     this.lazyContentLoadStatus = 1;
     var left_to_load = this.lazyContent.length;
 
-    var loaded = function (element) {
+    var loaded = function (root_element, listener_element) {
       return function () {
-        element.removeEventListener('load', loaded, false);
-        element.removeAttribute('data-uncloak-src');
-        element.removeAttribute('data-uncloak-srcset');
+        listener_element.removeEventListener('load', loaded, false);
+        root_element.removeAttribute('data-uncloak-src');
+        root_element.removeAttribute('data-uncloak-srcset');
+        root_element.removeAttribute('data-uncloak-ie-src');
+        root_element.removeAttribute('data-uncloak-alt');
+        root_element.removeAttribute('data-uncloak-class');
+        root_element.removeAttribute('data-uncloak-picture');
         left_to_load -= 1;
         if (left_to_load === 0) {
           this$1.lazyContentLoadStatus = 2;
@@ -159,13 +164,35 @@
     for (var i = 0; i < this.lazyContent.length; i++) {
       var el = this.lazyContent[i];
       var lazy_srcset = el.getAttribute('data-uncloak-srcset') || null;
+      var listener_el = el;
+
       if (lazy_srcset) {
         el.srcset = lazy_srcset;
       }
       if (el.hasAttribute('data-uncloak-src')) {
         el.src = el.getAttribute('data-uncloak-src');
       }
-      el.addEventListener('load', loaded(el), false);
+
+      if (el.hasAttribute('data-uncloak-picture')) {
+        var img = document.createElement('img');
+        listener_el = img;
+
+        if (this.instance.isIE && el.hasAttribute('data-uncloak-ie-src')) {
+          img.src = el.getAttribute('data-uncloak-ie-src');
+        }
+
+        if (el.hasAttribute('data-uncloak-alt')) {
+          img.alt = el.getAttribute('data-uncloak-alt');
+        }
+
+        if (el.hasAttribute('data-uncloak-class')) {
+          img.classList = el.getAttribute('data-uncloak-class');
+        }
+
+        el.append(img);
+      }
+
+      listener_el.addEventListener('load', loaded(el, listener_el), false);
     }
   };
   UncloakItem.prototype.mediaLoaded = function mediaLoaded () {
@@ -477,6 +504,7 @@
     this.items = [];
     this.hasResizeListener = false;
     this.nodeObserver = null;
+    this.isIE = (typeof document !== 'undefined' && document.documentMode);
 
     // Sent to UncloakItem
     this.itemOptions = {
