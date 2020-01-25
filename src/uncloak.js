@@ -6,6 +6,7 @@ export default class Uncloak {
     this.items = []
     this.hasResizeListener = false
     this.nodeObserver = null
+    this.isIE = (typeof document !== 'undefined' && document.documentMode)
 
     // Sent to UncloakItem
     this.itemOptions = {

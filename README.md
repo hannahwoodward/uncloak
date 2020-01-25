@@ -11,7 +11,7 @@
 - Each element will be created as an UncloakItem (or UncloakVideoItem), and:
   - Its `data-uncloak-new` attribute will be removed (so it won't be picked up again)
   - Be added to a a global IntersectionObserver instance (attached to Uncloak), to be revealed when its node is visible in the viewport
-  - Will query for any child elements to be lazy loaded (with `data-uncloak-src` or `data-uncloak-srcset` attributes) - in which case, will setup its own IntersectionObserver instance with a margin of 50% around the viewport
+  - Will query for any child elements to be lazy loaded (with `data-uncloak-src`, `data-uncloak-srcset`, `data-uncloak-picture` attributes) - in which case, will setup its own IntersectionObserver instance with a margin of 50% around the viewport
   - If it is an UncloakVideoItem, the video will autoplay once within 25% of the viewport (and paused if outside)
 - If you dynamically add anymore elements and want them to be picked up by Uncloak:
   - Make sure they have the `data-uncloak-new` attribute
@@ -112,6 +112,22 @@ CSS:
   z-index: 2;
 }
 ```
+
+### Example: Lazy picture element
+
+- Mark the picture element with `data-uncloak-picture`
+- Don't add an `<img>` inside the picture to prevent loading
+- Add a fallback source (via `data-uncloak-ie-src`) to be loaded on the `<img>` in IE (which doesn't support `<picture>`)
+- Optionally, add some alt text (`data-uncloak-alt`) or classes (`data-uncloak-class`) to be added to the `<img>` when it's created
+
+HTML:
+```
+<picture data-uncloak-picture data-uncloak-ie-src="src" data-uncloak-alt="Some alt text" data-uncloak-class="img-cls-1 img-cls-2">
+  <source srcset="https://placekitten.com/1440/810" media="(min-width: 1024px)">
+  <source srcset="https://placekitten.com/1920/1080" media="(min-width: 1440px)">
+</picture>
+```
+
 
 ### Browser Support
 
