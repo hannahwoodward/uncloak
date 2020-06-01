@@ -14,9 +14,9 @@
     "build": "rollup -c"
   },
   "devDependencies": {
+    "@rollup/plugin-buble": "^0.21.3",
     "eslint": "^6.5.1",
-    "rollup": "^1.14.4",
-    "rollup-plugin-buble": "^0.19.6",
+    "rollup": "1.32.1",
     "rollup-plugin-uglify": "^6.0.2"
   },
   "description": "IntersectionObserver-based lazy loader and content revealer",
