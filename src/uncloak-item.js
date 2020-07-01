@@ -173,10 +173,10 @@ export class UncloakItem {
         }
 
         if (el.hasAttribute('data-uncloak-class')) {
-          img.classList = el.getAttribute('data-uncloak-class')
+          img.className = el.getAttribute('data-uncloak-class')
         }
 
-        el.append(img)
+        el.appendChild(img)
       }
 
       listener_el.addEventListener('load', loaded(el, listener_el), false)
