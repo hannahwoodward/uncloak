@@ -8,6 +8,7 @@ export class UncloakItem {
         this.callbacks[key] = options.callbacks[key]
       }
     }
+
     this.cloaked = true
     this.uncloakReady = false
     this.delayTimer = {
@@ -17,7 +18,7 @@ export class UncloakItem {
     this.delayType = node.getAttribute('data-uncloak-delay-type') || null
     this.delayTypes = options.delayTypes || {}
     this.instance = instance
-    this.lazyContent = node.hasAttribute('data-uncloak-ignore-lazy') ? [] : node.querySelectorAll('[data-uncloak-src], [data-uncloak-srcset], [data-uncloak-picture]')
+    this.lazyContent = node.hasAttribute('data-uncloak-ignore-lazy') ? [] : node.querySelectorAll('[data-uncloak-src], [data-uncloak-srcset], [data-uncloak-picture]').filter(el => !el.hasAttribute('data-uncloak-ignore'))
     this.lazyContentLoadStatus = (this.lazyContent[0] ? -1 : 2) // NB: -1 => unloaded, 1 => loading, 2 => loaded
     this.node = node
     this.threshold = parseFloat(node.getAttribute('data-uncloak-threshold')) || 0
