@@ -32,42 +32,42 @@ export default class Uncloak {
 
     this.nodeObserver = new IntersectionObserver(entries => {
       entries.reduce((base_delay, entry) => {
-        let should_reveal_item = false;
-        let uncloak_item = null;
+        let should_reveal_item = false
+        let uncloak_item = null
 
         // Use try/catch as some browsers report entry.rootBounds as null in iframe
         try {
-          const b_rect = entry.boundingClientRect;
+          const b_rect = entry.boundingClientRect
           // browsers give negative result if entry covers the screen, so test to see if it covers the screen
           // use document.body.clientWidth instead of window.innerWidth for IE scrollbars
-          const is_intersecting = entry.isIntersecting || entry.intersectionRatio > 0 || (b_rect.top <= window.innerHeight && b_rect.left <= 0 && b_rect.width >= document.body.clientWidth && b_rect.height >= window.innerHeight);
+          const is_intersecting = entry.isIntersecting || entry.intersectionRatio > 0 || (b_rect.top <= window.innerHeight && b_rect.left <= 0 && b_rect.width >= document.body.clientWidth && b_rect.height >= window.innerHeight)
 
           if (!is_intersecting) {
-            return base_delay;
+            return base_delay
           }
 
-          uncloak_item = this.getItemByNode(entry.target);
-          const item_height = b_rect.height;
-          const viewport_visibility_threshold = (uncloak_item.threshold * entry.rootBounds.height);
-          const item_can_reach_threshold = (item_height >= viewport_visibility_threshold);
-          should_reveal_item = item_can_reach_threshold ? entry.intersectionRect.height >= viewport_visibility_threshold : is_intersecting;
+          uncloak_item = this.getItemByNode(entry.target)
+          const item_height = b_rect.height
+          const viewport_visibility_threshold = (uncloak_item.threshold * entry.rootBounds.height)
+          const item_can_reach_threshold = (item_height >= viewport_visibility_threshold)
+          should_reveal_item = item_can_reach_threshold ? entry.intersectionRect.height >= viewport_visibility_threshold : is_intersecting
         } catch (e) {
           // Silently fail, just reveal item
-          should_reveal_item = true;
-          uncloak_item = this.getItemByNode(entry.target);
+          should_reveal_item = true
+          uncloak_item = this.getItemByNode(entry.target)
         }
 
         if (should_reveal_item && uncloak_item) {
-          base_delay = uncloak_item.process(base_delay);
-          this.nodeObserver.unobserve(entry.target);
+          base_delay = uncloak_item.process(base_delay)
+          this.nodeObserver.unobserve(entry.target)
         }
 
-        return base_delay;
+        return base_delay
       }, 0)
     }, {
       rootMargin: '10% 0%',
       threshold: [ 0.1, 0.2, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9 ]
-    });
+    })
 
     // initial load
     this.findNewItems()

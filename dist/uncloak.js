@@ -532,26 +532,39 @@
     }
 
     this.nodeObserver = new IntersectionObserver(function (entries) {
-      var base_delay = 0;
-      for (var i = 0; i < entries.length; i++) {
-        var b_rect = entries[i].boundingClientRect;
-        // browsers give negative result if entry covers the screen, so test to see if it covers the screen
-        // use document.body.clientWidth instead of window.innerWidth for IE scrollbars
-        var is_intersecting = entries[i].isIntersecting || entries[i].intersectionRatio > 0 || (b_rect.top <= window.innerHeight && b_rect.left <= 0 && b_rect.width >= document.body.clientWidth && b_rect.height >= window.innerHeight);
+      entries.reduce(function (base_delay, entry) {
+        var should_reveal_item = false;
+        var uncloak_item = null;
 
-        if (is_intersecting) {
-          var uncloak_item = this$1.getItemByNode(entries[i].target);
-          var item_height = b_rect.height;
-          var viewport_visibility_threshold = (uncloak_item.threshold * entries[i].rootBounds.height);
-          var item_can_reach_threshold = (item_height >= viewport_visibility_threshold);
-          var should_reveal_item = item_can_reach_threshold ? entries[i].intersectionRect.height >= viewport_visibility_threshold : is_intersecting;
+        // Use try/catch as some browsers report entry.rootBounds as null in iframe
+        try {
+          var b_rect = entry.boundingClientRect;
+          // browsers give negative result if entry covers the screen, so test to see if it covers the screen
+          // use document.body.clientWidth instead of window.innerWidth for IE scrollbars
+          var is_intersecting = entry.isIntersecting || entry.intersectionRatio > 0 || (b_rect.top <= window.innerHeight && b_rect.left <= 0 && b_rect.width >= document.body.clientWidth && b_rect.height >= window.innerHeight);
 
-          if (should_reveal_item) {
-            base_delay = uncloak_item.process(base_delay);
-            this$1.nodeObserver.unobserve(entries[i].target);
+          if (!is_intersecting) {
+            return base_delay
           }
+
+          uncloak_item = this$1.getItemByNode(entry.target);
+          var item_height = b_rect.height;
+          var viewport_visibility_threshold = (uncloak_item.threshold * entry.rootBounds.height);
+          var item_can_reach_threshold = (item_height >= viewport_visibility_threshold);
+          should_reveal_item = item_can_reach_threshold ? entry.intersectionRect.height >= viewport_visibility_threshold : is_intersecting;
+        } catch (e) {
+          // Silently fail, just reveal item
+          should_reveal_item = true;
+          uncloak_item = this$1.getItemByNode(entry.target);
         }
-      }
+
+        if (should_reveal_item && uncloak_item) {
+          base_delay = uncloak_item.process(base_delay);
+          this$1.nodeObserver.unobserve(entry.target);
+        }
+
+        return base_delay
+      }, 0);
     }, {
       rootMargin: '10% 0%',
       threshold: [ 0.1, 0.2, 0.3, 0.5, 0.6, 0.7, 0.8, 0.9 ]
